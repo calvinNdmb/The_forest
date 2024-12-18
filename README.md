@@ -33,10 +33,7 @@ pip install -r requirements.txt
 ## Utilisation
 
 1. Clonez ce dépôt :
-    ```bash
-    git clone https://github.com/votre-utilisateur/simulation-arbres-animaux.git
-    cd simulation-arbres-animaux
-    ```
+   
 2. Lancez le script principal :
     ```bash
     python main.py
