@@ -14,9 +14,11 @@ class Arbre:
         self.max_age = random.randint(1, 40)
         self.age = 0
         self.energie=0
-        self.stored_energy=0
+        self.energie_solaire = 20
+        self.hauteur = 1  # Hauteur initiale (en unités arbitraires)
+        self.max_hauteur = random.randint(5, 50)  # Hauteur max possible
 
-    def update(self):
+    def update(self, arbres):
         if self.state == "seed":
             if random.random() < 0.001:
                 self.state = "dead"
@@ -25,36 +27,44 @@ class Arbre:
                 self.rayon_top = 1
                 self.energie = random.randint(1, 5)
         elif self.state == "alive":
-            if self.age >= self.max_age or self.energie<=0:
+            if self.age >= self.max_age or self.energie <= 0:
                 self.state = "dead"
                 return
-            self.calcule_energie()
-            if 50 < self.energie < 60:
+            # area_top = np.pi * (self.rayon_top**2)
+            # top_factor = 1.0
+            self.calcule_energie(arbres)
+            if self.energie > 50 and self.energie < 60:
                 if random.randint(1, 100) > 20:
-                    self.energie -= 20*(self.age/10)
+                    self.energie -= 20 * (self.age / 10)
                     self.rayon_top += 0.1
+                    # print("prise de risque!!!!!")
 
-            if self.energie >60:
+            # Croissance
+            if self.energie > 50 and self.rayon_top < self.rayon_top_max:
+                self.energie -= 10  # Coût de croissance du rayon
                 self.rayon_top += 0.1
 
-            
-            
-            elif self.energie <10:
-                self.state = "dead"
-            """# Vérifier si une plante plus grande recouvre celle-ci pour le rayon_top
-            for autre in arbres:
-                if autre is self or autre.state != "alive":
-                    continue
-                dist = np.linalg.norm(self.pos - autre.pos)
-                # Check overlap top
-                if dist < (self.rayon_top + autre.rayon_top):
-                    # Il y a chevauchement aérien
-                    if autre.rayon_top > self.rayon_top:
-                        # Cette plante est plus petite, elle subit un -50% sur la production aérienne
-                        top_factor *= 0.5"""
+            if self.energie > 40 and self.hauteur < self.max_hauteur:
+                self.energie -= 5  # Coût de croissance en hauteur
+                self.hauteur += 0.1
 
-    def calcule_energie(self):
-        self.energie = 100-np.log(self.rayon_top)*30*self.nutriments/100
+            # Vérification de la mort si l'énergie tombe trop bas
+            if self.energie < 10:
+                self.state = "dead"
+
+    def calcule_energie(self, arbres):
+        # Calcul de la réduction due à l'ombre des autres arbres
+        for autre in arbres:
+            if autre is self or autre.state != "alive":
+                continue
+            dist = np.linalg.norm(self.pos - autre.pos)
+            if dist < autre.rayon_top:  # Si cet arbre est sous la canopée de l'autre
+                if autre.hauteur > self.hauteur:  # L'autre arbre est plus grand
+                    # Ombre proportionnelle à la différence de hauteur et à la distance
+                    ombre_factor = (autre.hauteur - self.hauteur) / autre.hauteur
+                    self.energie_solaire *= (1 - ombre_factor)  # Réduction de l'énergie solaire
+        # Calcul de l'énergie totale (soleil + nutriments)
+        self.energie = self.energie_solaire + (100 - np.log(self.rayon_top + 1) * 30 * self.nutriments / 100)
         
     def draw(self, screen, width, height):
         if self.state == "dead":
