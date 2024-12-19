@@ -24,7 +24,7 @@ def main():
             np.zeros_like(nutrient_map)), # canal bleu à 0
             axis=-1
         ).astype(np.uint8)
-    numb_tree = 50
+    numb_tree = 100
     trees = []
     for i in range(numb_tree):
         x, y = np.random.rand(2) * [width, height]
@@ -49,7 +49,7 @@ def main():
                     dist = np.sqrt((arbre.pos[0] - mouse_x) ** 2 + (arbre.pos[1] - mouse_y) ** 2)
                     # On considère le rayon_top comme la zone cliquable si l'arbre est vivant
                     if arbre.state == "alive" and dist <= arbre.rayon_top:
-                        print(f"Nutriments de l'arbre : {arbre.nutriments}, age : {arbre.age} , position : {arbre.pos}, energie : {arbre.energie}, energie solaire : {arbre.energie_solaire}, rayon_top : {arbre.rayon_top},hauteur : {arbre.hauteur}")
+                        print(f"Nutriments de l'arbre : {arbre.nutriments}, age : {arbre.age}, energie : {arbre.energie},hauteur : {arbre.hauteur}")
                         break
                     elif arbre.state == "seed" and dist <= 2:
                         print(f"Graine : nutriments {arbre.nutriments}, position : {arbre.pos}")

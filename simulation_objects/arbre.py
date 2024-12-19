@@ -17,14 +17,14 @@ class Arbre:
         self.max_age = random.randint(1, 40)
         self.age = 0
         self.energie = 0
-        self.stored_energy = 0
         self.zone_action = 0
         self.graines_produites = 0
         self.dernier_reproduction = 0  # Années depuis la dernière reproduction
         self.energie_solaire = 0
         self.hauteur = 1  # Hauteur initiale (en unités arbitraires)
         #self.max_hauteur = random.randint(35, 50)  # Hauteur max possible
-        self.favorite_groth = 50/100  # Facteur de croissance favori
+        self.favorite_groth = 0.5  # Facteur de croissance favori
+        self.coeff_stockage = 0.1  # Coefficient de stockage de l'énergie
 
     def update(
             self,
@@ -56,14 +56,15 @@ class Arbre:
 
             cout_croissance_largeur = 0.001 * (np.pi * self.rayon_top ** 2)  # Coût basé sur l'aire de la canopée
             cout_croissance_hauteur = 0.07 * self.hauteur  # Coût basé sur la hauteur actuelle
-            # Croissance en largeur
-            if self.energie > (40 + cout_croissance_largeur): #and self.rayon_top < self.rayon_top_max:
-                self.energie -= cout_croissance_largeur
-                self.rayon_top += 0.1
-            # Croissance en hauteur
-            if self.energie > (40 + cout_croissance_hauteur): #and self.hauteur < self.max_hauteur:
-                self.energie -= cout_croissance_hauteur
-                self.hauteur += 0.1
+            if self.energie > 20:  # Stockage de l'énergie
+                self.energie += self.energie *(self.coeff_stockage/(self.age+1)) 
+            if self.energie > 50:  
+                if random.random() < self.favorite_groth:
+                    self.energie -= cout_croissance_largeur
+                    self.rayon_top += 0.1
+                else:
+                    self.energie -= cout_croissance_hauteur
+                    self.hauteur += 0.1
             if self.energie < 10:
                 self.state = "dead"
 
@@ -72,9 +73,6 @@ class Arbre:
                 self.produire_graine(arbres=arbres, nutrient_map=nutrient_map, width=width, height=height,
                                      max_graines_zone=max_graines_zone, max_graines_total=max_graines_total)
                 self.dernier_reproduction = 0
-
-                
-
         if day % 100 == 0:
             self.age += 1
             self.dernier_reproduction += 1
@@ -124,10 +122,11 @@ class Arbre:
 
     def mutation(self,new_arbre: 'Arbre'):   # Mutations
         # Mutation de la couleur
-        if random.random() < 0.1:
+        if random.random() < 0.5:
             new_arbre.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-            new_arbre.max_age = min (max([self.max_age + (random.randint(-30, 30) / 100),1]),100)
+            new_arbre.max_age = min (max(self.max_age + random.randint(-1,1),1),100)
             new_arbre.favorite_groth = min (max([self.favorite_groth + (random.randint(-3, 3)/100),1]),100)
+            new_arbre.coeff_stockage = min (max([self.coeff_stockage + (random.randint(-1, 1) / 100),1]),100)
             print(f"Mutation!!!! ==> {new_arbre.color} , {new_arbre.max_age} , {new_arbre.favorite_groth}")
             return new_arbre
         else :
@@ -151,8 +150,8 @@ class Arbre:
         self.energie = self.energie_solaire + (100 - np.log(self.rayon_top + 1) * 30 * self.nutriments / 100)
 
     def calcule_cout_maintient(self):
-        cout_hauteur = self.hauteur * 0.03
-        cout_surface = np.pi * (self.rayon_top ** 2) * 0.0001
+        cout_hauteur = self.hauteur * 0.05
+        cout_surface = np.pi * (self.rayon_top ** 2) * 0.01
         # Coût total passif
         return cout_hauteur + cout_surface
 
