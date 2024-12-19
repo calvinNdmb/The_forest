@@ -95,7 +95,6 @@ def main(numb_tree = 50):
                 mean_hauteurs.append(hauteurs/alive_count) 
             number_of_tree_vivants.append(alive_count)
             number_of_seeds.append(seed_count)
-        
 
         if day % 100 == 0:
             print(f"New year!!!!!🎉🎉🎉{day/100}, Nombre d'arbre {number_of_tree_vivants[-1]},Nombre de seeds {number_of_seeds[-1]}")
@@ -108,6 +107,6 @@ def main(numb_tree = 50):
     return number_of_tree_vivants, number_of_seeds,mean_age, mean_rayons_tops,mean_energies, mean_energies_solaires, mean_hauteurs
 
 if __name__ == '__main__':
-    number_of_tree_vivants, number_of_seeds, mean_age, mean_rayons_tops,mean_energies, mean_energies_solaires, mean_hauteurs = main(1000)
+    number_of_tree_vivants, number_of_seeds, mean_age, mean_rayons_tops,mean_energies, mean_energies_solaires, mean_hauteurs = main(200)
     graphiques(number_of_tree_vivants, number_of_seeds, mean_age, mean_rayons_tops, 
                mean_energies, mean_energies_solaires, mean_hauteurs)
