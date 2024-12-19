@@ -7,7 +7,7 @@ from simulation_objects.arbre import Arbre
 width, height = 720, 640
 
 def main():
-    
+
     pygame.init()
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("The Forest")

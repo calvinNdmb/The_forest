@@ -12,7 +12,6 @@ class Arbre:
         self.color = (255, 255, 255)
         self.nutriments = (nutriments / 255) * 100  # Nutriments à la position initiale
         self.state = "seed" # Etats possibles : "seed", "alive", "dead"
-        self.rayon_top_max = random.randint(10, 100) # Les rayons max
         self.rayon_top = 0 # Début à 0 quand c'est une graine, ils pousseront quand la plante éclot
         self.max_age = random.randint(1, 40)
         self.age = 0
@@ -23,7 +22,7 @@ class Arbre:
         self.dernier_reproduction = 0  # Années depuis la dernière reproduction
         self.energie_solaire = 0
         self.hauteur = 1  # Hauteur initiale (en unités arbitraires)
-        self.max_hauteur = random.randint(35, 50)  # Hauteur max possible
+        self.favorite_groth = 50/100  # Facteur de croissance favori
 
     def update(
             self,
@@ -54,21 +53,20 @@ class Arbre:
             if 50 < self.energie < 60:
                 if random.randint(1, 100) > 20:
                     self.energie -= 20 * (self.age / 10)
-                    if self.rayon_top < self.rayon_top_max:
-                        self.rayon_top += 0.1
 
-            if self.energie > 50 and self.rayon_top < self.rayon_top_max:
+
+            if self.energie > 50 :
                 self.energie -= 10
                 self.rayon_top += 0.1
 
-            if self.energie > 40 and self.hauteur < self.max_hauteur:
+            if self.energie > 40:
                 self.energie -= 5  # Coût de croissance en hauteur
                 self.hauteur += 0.1
 
             elif self.energie < 10:
                 self.state = "dead"
 
-            if (self.age >= 10 and random.random() < 0.05 and
+            if (self.age >= 1 and random.random() < 0.1 and #t'a modif ça petit con
                 self.dernier_reproduction >= attente_reproduction):  # Probabilité de 2% et attente après reproduction
                 self.produire_graine(arbres=arbres, nutrient_map=nutrient_map, width=width, height=height,
                                      max_graines_zone=max_graines_zone, max_graines_total=max_graines_total)
@@ -81,7 +79,7 @@ class Arbre:
             self.dernier_reproduction += 1
 
     def produire_graine(
-            arbre: 'Arbre',
+            self,
             arbres: List['Arbre'],
             width:int,
             height: int,
@@ -92,18 +90,22 @@ class Arbre:
         # Limite de graines par zone
         graines_dans_zone = 0
         for autre_arbre in arbres:
-            dist = np.linalg.norm(arbre.pos - autre_arbre.pos)
-            if dist <= arbre.zone_action and autre_arbre.state == "seed":
+            dist = np.linalg.norm(self.pos - autre_arbre.pos)
+            if dist <= self.zone_action and autre_arbre.state == "seed":
                 graines_dans_zone += 1
 
-        if graines_dans_zone >= max_graines_zone or arbre.graines_produites >= max_graines_total:
+        if graines_dans_zone >= max_graines_zone or self.graines_produites >= max_graines_total:
             return
 
         # Générer une position aléatoire dans la zone d'action
-        angle = random.uniform(0, 2 * np.pi)
-        distance = random.uniform(0, arbre.zone_action)
-        new_x = arbre.pos[0] + distance * np.cos(angle)
-        new_y = arbre.pos[1] + distance * np.sin(angle)
+        x_min = int (max(0, self.pos[0] - max_graines_zone))
+        x_max = int (min(width - 1, self.pos[0] + max_graines_zone))
+        y_min = int (max(0, self.pos[1] - max_graines_zone))
+        y_max = int (min(height - 1, self.pos[1] + max_graines_zone))
+
+
+        new_x = random.randint(x_min, x_max)
+        new_y = random.randint(y_min, y_max)
 
         # Vérifier que la position est valide (pas de conflit avec d'autres arbres)
         position_valide = True
@@ -117,8 +119,19 @@ class Arbre:
             nutriments = nutrient_map[int(new_x) % width, int(new_y) % height]
             nouveaux_arbre = Arbre(new_x, new_y, nutriments)
             nouveaux_arbre.color = (255, 255, 0)
-            arbres.append(nouveaux_arbre)
-            arbre.graines_produites += 1
+            arbres.append(self.mutation(nouveaux_arbre))
+            self.graines_produites += 1
+
+    def mutation(self,new_arbre: 'Arbre'):   # Mutations
+        # Mutation de la couleur
+        if random.random() < 0.1:
+            new_arbre.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+            new_arbre.max_age = max ([self.max_age + random.randint(-3, 3),1])
+            new_arbre.favorite_groth = max([self.favorite_groth + random.randint(-3, 3),1])
+            return new_arbre
+
+
+
 
 
     def calcule_energie(self, arbres):
@@ -147,9 +160,8 @@ class Arbre:
             return
         # state = "alive"
         surface = pygame.Surface((width, height), pygame.SRCALPHA)
-        alpha = 50
-        color_feuilles = (43, 255, 0, alpha)
-        couleur_tronc = (150, 75, 25)
+        alpha = 130  # Transparence
+        color_feuilles = (0, 255, 0, alpha)
         # Le rayon_top représente la canopée, on la dessine en vert transparent
         pygame.draw.circle(surface, color_feuilles, self.pos.astype(int), int(self.rayon_top))
         screen.blit(surface, (0, 0))
