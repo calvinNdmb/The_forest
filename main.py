@@ -107,6 +107,6 @@ def main(numb_tree = 50):
     return number_of_tree_vivants, number_of_seeds,mean_age, mean_rayons_tops,mean_energies, mean_energies_solaires, mean_hauteurs
 
 if __name__ == '__main__':
-    number_of_tree_vivants, number_of_seeds, mean_age, mean_rayons_tops,mean_energies, mean_energies_solaires, mean_hauteurs = main(200)
+    number_of_tree_vivants, number_of_seeds, mean_age, mean_rayons_tops,mean_energies, mean_energies_solaires, mean_hauteurs = main(300)
     graphiques(number_of_tree_vivants, number_of_seeds, mean_age, mean_rayons_tops, 
                mean_energies, mean_energies_solaires, mean_hauteurs)

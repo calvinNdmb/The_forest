@@ -78,46 +78,47 @@ class Arbre:
             self.dernier_reproduction += 1
 
     def produire_graine(
-            self,
-            arbres: List['Arbre'],
-            width:int,
-            height: int,
-            nutrient_map: np.ndarray,
-            max_graines_zone: int,
-            max_graines_total: int
-    ): ### Il y a 2 boucles for c'est pas ouf
-        # Limite de graines par zone
-        graines_dans_zone = 0
-        for autre_arbre in arbres:
-            dist = np.linalg.norm(self.pos - autre_arbre.pos)
-            if dist <= self.zone_action and autre_arbre.state == "seed":
-                graines_dans_zone += 1
-
-        if graines_dans_zone >= max_graines_zone or self.graines_produites >= max_graines_total:
-            return
-
+        self,
+        arbres: List['Arbre'],
+        width: int,
+        height: int,
+        nutrient_map: np.ndarray,
+        max_graines_zone: int,
+        max_graines_total: int
+):
         # Générer une position aléatoire dans la zone d'action
-        x_min = int (max(0, self.pos[0] - max_graines_zone))
-        x_max = int (min(width - 1, self.pos[0] + max_graines_zone))
-        y_min = int (max(0, self.pos[1] - max_graines_zone))
-        y_max = int (min(height - 1, self.pos[1] + max_graines_zone))
+        x_min = int(max(0, self.pos[0] - max_graines_zone))
+        x_max = int(min(width - 1, self.pos[0] + max_graines_zone))
+        y_min = int(max(0, self.pos[1] - max_graines_zone))
+        y_max = int(min(height - 1, self.pos[1] + max_graines_zone))
 
         new_x = random.randint(x_min, x_max)
         new_y = random.randint(y_min, y_max)
 
-        # Vérifier que la position est valide (pas de conflit avec d'autres arbres)
+        graines_dans_zone = 0
         position_valide = True
+
+        # Une seule boucle pour vérifier à la fois le nombre de graines dans la zone
+        # et la validité de la position pour planter une nouvelle graine
         for autre_arbre in arbres:
-            dist = np.linalg.norm([new_x - autre_arbre.pos[0], new_y - autre_arbre.pos[1]])
-            if dist < autre_arbre.rayon_top:
+            dist = np.linalg.norm(self.pos - autre_arbre.pos)
+            if dist <= self.zone_action and autre_arbre.state == "seed":
+                graines_dans_zone += 1
+                # Si on a déjà trop de graines, pas la peine de continuer
+                if graines_dans_zone >= max_graines_zone:
+                    position_valide = False
+                    break
+
+            dist_new = np.linalg.norm([new_x - autre_arbre.pos[0], new_y - autre_arbre.pos[1]])
+            if dist_new < autre_arbre.rayon_top:
                 position_valide = False
                 break
 
-        if position_valide:
+        if position_valide and graines_dans_zone < max_graines_zone and self.graines_produites < max_graines_total:
             nutriments = nutrient_map[int(new_x) % width, int(new_y) % height]
-            nouveaux_arbre = Arbre(new_x, new_y, nutriments)
-            nouveaux_arbre.color = self.color
-            arbres.append(self.mutation(nouveaux_arbre))
+            nouvel_arbre = Arbre(new_x, new_y, nutriments)
+            nouvel_arbre.color = self.color
+            arbres.append(self.mutation(nouvel_arbre))
             self.graines_produites += 1
 
     def mutation(self,new_arbre: 'Arbre'):   # Mutations aléatoires
