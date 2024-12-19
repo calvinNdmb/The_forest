@@ -66,7 +66,7 @@ class Arbre:
             elif self.energie < 10:
                 self.state = "dead"
 
-            if (self.age >= 1 and random.random() < 0.1 and #t'a modif ça petit con
+            if (self.age >= 1 and random.random() < 0.1 and #t'as modif ça petit con
                 self.dernier_reproduction >= attente_reproduction):  # Probabilité de 2% et attente après reproduction
                 self.produire_graine(arbres=arbres, nutrient_map=nutrient_map, width=width, height=height,
                                      max_graines_zone=max_graines_zone, max_graines_total=max_graines_total)
@@ -103,7 +103,6 @@ class Arbre:
         y_min = int (max(0, self.pos[1] - max_graines_zone))
         y_max = int (min(height - 1, self.pos[1] + max_graines_zone))
 
-
         new_x = random.randint(x_min, x_max)
         new_y = random.randint(y_min, y_max)
 
@@ -126,13 +125,12 @@ class Arbre:
         # Mutation de la couleur
         if random.random() < 0.1:
             new_arbre.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-            new_arbre.max_age = max ([self.max_age + random.randint(-3, 3),1])
-            new_arbre.favorite_groth = max([self.favorite_groth + random.randint(-3, 3),1])
+            new_arbre.max_age = min (max([self.max_age + (random.randint(-30, 30) / 100),1]),100)
+            new_arbre.favorite_groth = min (max([self.favorite_groth + (random.randint(-3, 3)/100),1]),100)
+            print(f"Mutation!!!! ==> {new_arbre.color} , {new_arbre.max_age} , {new_arbre.favorite_groth}")
             return new_arbre
-
-
-
-
+        else :
+            return new_arbre
 
     def calcule_energie(self, arbres):
         # Base d'énergie solaire proportionnelle à la taille de la canopée
