@@ -73,7 +73,8 @@ class Arbre:
                 self.produire_graine(arbres=arbres, nutrient_map=nutrient_map, width=width, height=height,
                                      max_graines_zone=max_graines_zone, max_graines_total=max_graines_total)
                 self.dernier_reproduction = 0
-                print ("Reproduction!!!!")
+
+                
 
         if day % 100 == 0:
             self.age += 1
@@ -115,6 +116,7 @@ class Arbre:
         if position_valide:
             nutriments = nutrient_map[int(new_x) % width, int(new_y) % height]
             nouveaux_arbre = Arbre(new_x, new_y, nutriments)
+            nouveaux_arbre.color = (255, 255, 0)
             arbres.append(nouveaux_arbre)
             arbre.graines_produites += 1
 
