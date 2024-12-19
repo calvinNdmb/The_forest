@@ -21,9 +21,9 @@ class Arbre:
         self.zone_action = 0
         self.graines_produites = 0
         self.dernier_reproduction = 0  # Années depuis la dernière reproduction
-        self.energie_solaire = 20
+        self.energie_solaire = 0
         self.hauteur = 1  # Hauteur initiale (en unités arbitraires)
-        self.max_hauteur = random.randint(5, 50)  # Hauteur max possible
+        self.max_hauteur = random.randint(35, 50)  # Hauteur max possible
 
     def update(
             self,
@@ -120,17 +120,20 @@ class Arbre:
 
 
     def calcule_energie(self, arbres):
+        # Base d'énergie solaire proportionnelle à la taille de la canopée
+        self.energie_solaire = (np.pi * (self.rayon_top**2))/100
         # Calcul de la réduction due à l'ombre des autres arbres
         for autre in arbres:
             if autre is self or autre.state != "alive":
                 continue
             dist = np.linalg.norm(self.pos - autre.pos)
             if dist < autre.rayon_top:  # Si cet arbre est sous la canopée de l'autre
-                if autre.hauteur > self.hauteur:  # L'autre arbre est plus grand
-                    # Ombre proportionnelle à la différence de hauteur et à la distance
+                if autre.hauteur > self.hauteur:
+                    # Calcul de l'effet de l'ombre et de la proximité (plus proche, plus d'ombre)
                     ombre_factor = (autre.hauteur - self.hauteur) / autre.hauteur
-                    self.energie_solaire *= (1 - ombre_factor)  # Réduction de l'énergie solaire
-        # Calcul de l'énergie totale (soleil + nutriments)
+                    proximity_factor = max(0, 1 - dist / autre.rayon_top)
+                    self.energie_solaire *= (1 - ombre_factor * proximity_factor)
+        # Calcul de l'énergie totale
         self.energie = self.energie_solaire + (100 - np.log(self.rayon_top + 1) * 30 * self.nutriments / 100)
 
     def draw(self, screen: Surface, width: int, height: int):
