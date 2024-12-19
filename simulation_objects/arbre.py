@@ -27,14 +27,11 @@ class Arbre:
             if self.age >= self.max_age or self.energie<=0:
                 self.state = "dead"
                 return
-            #area_top = np.pi * (self.rayon_top**2)
-            #top_factor = 1.0
             self.calcule_energie()
             if self.energie >50 and self.energie<60:
                 if random.randint(1, 100) > 20:
                     self.energie -= 20*(self.age/10)
                     self.rayon_top += 0.1
-                    #print("prise de risque!!!!!")
 
             if self.energie >60:
                 self.rayon_top += 0.1
