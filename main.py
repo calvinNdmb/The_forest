@@ -17,7 +17,12 @@ def main():
     persistence = 0.5
     lacunarity = 1
     nutrient_map = generate_nutrient_map(width, height,scale, octaves, persistence, lacunarity)
-    nutrient_map_rgb = np.stack((nutrient_map, nutrient_map, nutrient_map), axis=-1).astype(np.uint8)
+    nutrient_map_rgb = np.stack(
+            (np.zeros_like(nutrient_map),  # canal rouge à 0
+            nutrient_map,                 # canal vert avec les nutriments
+            np.zeros_like(nutrient_map)), # canal bleu à 0
+            axis=-1
+        ).astype(np.uint8)
     numb_tree = 100
     trees = []
     for i in range(numb_tree):
@@ -28,9 +33,10 @@ def main():
     # Boucle principale=======================================
     running = True
     day=0
+    nutrient_surf = pygame.surfarray.make_surface(nutrient_map_rgb)
     while running:
         day+=1
-        nutrient_surf = pygame.surfarray.make_surface(nutrient_map_rgb)
+        
         screen.blit(nutrient_surf, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
