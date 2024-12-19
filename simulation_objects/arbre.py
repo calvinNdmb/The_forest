@@ -5,50 +5,6 @@ import random
 
 from pygame import Surface
 
-class PropagationAgent:
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def produire_graine(
-            arbre: 'Arbre',
-            arbres: List['Arbre'],
-            width:int,
-            height: int,
-            nutrient_map: np.ndarray,
-            max_graines_zone: int,
-            max_graines_total: int
-    ):
-        # Limite de graines par zone
-        graines_dans_zone = 0
-        for autre_arbre in arbres:
-            dist = np.linalg.norm(arbre.pos - autre_arbre.pos)
-            if dist <= arbre.zone_action and autre_arbre.state == "seed":
-                graines_dans_zone += 1
-
-        if graines_dans_zone >= max_graines_zone or arbre.graines_produites >= max_graines_total:
-            return
-
-        # Générer une position aléatoire dans la zone d'action
-        angle = random.uniform(0, 2 * np.pi)
-        distance = random.uniform(0, arbre.zone_action)
-        new_x = arbre.pos[0] + distance * np.cos(angle)
-        new_y = arbre.pos[1] + distance * np.sin(angle)
-
-        # Vérifier que la position est valide (pas de conflit avec d'autres arbres)
-        position_valide = True
-        for autre_arbre in arbres:
-            dist = np.linalg.norm([new_x - autre_arbre.pos[0], new_y - autre_arbre.pos[1]])
-            if dist < autre_arbre.rayon_top:
-                position_valide = False
-                break
-
-        if position_valide:
-            nutriments = nutrient_map[int(new_x) % width, int(new_y) % height]
-            nouveaux_arbre = Arbre(new_x, new_y, nutriments)
-            arbres.append(nouveaux_arbre)
-            arbre.graines_produites += 1
-
 
 class Arbre:
     def __init__(self, x: int, y: int,nutriments: Union[float, np.float64]):
@@ -114,13 +70,53 @@ class Arbre:
 
             if (self.age >= 10 and random.random() < 0.05 and
                 self.dernier_reproduction >= attente_reproduction):  # Probabilité de 2% et attente après reproduction
-                PropagationAgent.produire_graine(self, arbres=arbres, nutrient_map=nutrient_map, width=width, height=height,
-                                                 max_graines_zone=max_graines_zone, max_graines_total=max_graines_total)
+                self.produire_graine(arbres=arbres, nutrient_map=nutrient_map, width=width, height=height,
+                                     max_graines_zone=max_graines_zone, max_graines_total=max_graines_total)
                 self.dernier_reproduction = 0
 
         if day % 100 == 0:
             self.age += 1
             self.dernier_reproduction += 1
+
+    def produire_graine(
+            arbre: 'Arbre',
+            arbres: List['Arbre'],
+            width:int,
+            height: int,
+            nutrient_map: np.ndarray,
+            max_graines_zone: int,
+            max_graines_total: int
+    ):
+        # Limite de graines par zone
+        graines_dans_zone = 0
+        for autre_arbre in arbres:
+            dist = np.linalg.norm(arbre.pos - autre_arbre.pos)
+            if dist <= arbre.zone_action and autre_arbre.state == "seed":
+                graines_dans_zone += 1
+
+        if graines_dans_zone >= max_graines_zone or arbre.graines_produites >= max_graines_total:
+            return
+
+        # Générer une position aléatoire dans la zone d'action
+        angle = random.uniform(0, 2 * np.pi)
+        distance = random.uniform(0, arbre.zone_action)
+        new_x = arbre.pos[0] + distance * np.cos(angle)
+        new_y = arbre.pos[1] + distance * np.sin(angle)
+
+        # Vérifier que la position est valide (pas de conflit avec d'autres arbres)
+        position_valide = True
+        for autre_arbre in arbres:
+            dist = np.linalg.norm([new_x - autre_arbre.pos[0], new_y - autre_arbre.pos[1]])
+            if dist < autre_arbre.rayon_top:
+                position_valide = False
+                break
+
+        if position_valide:
+            nutriments = nutrient_map[int(new_x) % width, int(new_y) % height]
+            nouveaux_arbre = Arbre(new_x, new_y, nutriments)
+            arbres.append(nouveaux_arbre)
+            arbre.graines_produites += 1
+
 
     def calcule_energie(self, arbres):
         # Calcul de la réduction due à l'ombre des autres arbres
