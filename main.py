@@ -1,12 +1,19 @@
 import pygame
 import numpy as np
-
+import matplotlib.pyplot as plt
 from map.nutrient_map import generate_nutrient_map
 from simulation_objects.arbre import Arbre
+from map.utils import graphiques
 
 width, height = 720, 640
-
-def main():
+number_of_tree_vivants = []
+number_of_seeds = []
+mean_age = []
+mean_rayons_tops = []
+mean_energies = []
+mean_energies_solaires = []
+mean_hauteurs = []
+def main(numb_tree = 50):
 
     pygame.init()
     screen = pygame.display.set_mode((width, height))
@@ -24,7 +31,6 @@ def main():
             np.zeros_like(nutrient_map)), # canal bleu à 0
             axis=-1
         ).astype(np.uint8)
-    numb_tree = 100
     trees = []
     for i in range(numb_tree):
         x, y = np.random.rand(2) * [width, height]
@@ -35,9 +41,17 @@ def main():
     running = True
     day=0
     nutrient_surf = pygame.surfarray.make_surface(nutrient_map_rgb)
+    updated_trees = []
     while running:
+        ages = 0
+        rayons_tops=0
+        energies=0
+        energies_solaires=0
+        hauteurs=0
         day += 1
-
+        updated_trees = []
+        alive_count = 0
+        seed_count = 0
         screen.blit(nutrient_surf, (0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -58,13 +72,42 @@ def main():
         for p in trees:
             p.update(arbres=trees, day=day, width=width, height=height, nutrient_map=nutrient_map)
             p.draw(screen=screen, width=width, height=height)
+            # Inclure uniquement les arbres vivants ou les graines
+            if p.state == "alive":
+                updated_trees.append(p)
+                #pour les statistiques
+                alive_count += 1
+                ages += p.age
+                rayons_tops += p.rayon_top
+                energies += p.energie
+                energies_solaires += p.energie_solaire
+                hauteurs += p.hauteur
+            elif p.state == "seed":
+                seed_count += 1
+                updated_trees.append(p)
+        trees = updated_trees 
+        if day % 5 == 0:   
+            if alive_count != 0 :
+                mean_age.append(ages/alive_count)
+                mean_rayons_tops.append(rayons_tops/alive_count)
+                mean_energies.append(energies/alive_count)
+                mean_energies_solaires.append(energies_solaires/alive_count)
+                mean_hauteurs.append(hauteurs/alive_count) 
+            number_of_tree_vivants.append(alive_count)
+            number_of_seeds.append(seed_count)
+        
+
         if day % 100 == 0:
-            print(f"New year!!!!!🎉🎉🎉{day / 100}")
+            print(f"New year!!!!!🎉🎉🎉{day/100}, Nombre d'arbre {number_of_tree_vivants[-1]},Nombre de seeds {number_of_seeds[-1]}")
 
         pygame.display.flip()
         pygame.time.delay(1)
-
+        if alive_count == 0 and seed_count == 0:
+            running = False
     pygame.quit()
+    return number_of_tree_vivants, number_of_seeds,mean_age, mean_rayons_tops,mean_energies, mean_energies_solaires, mean_hauteurs
 
 if __name__ == '__main__':
-    main()
+    number_of_tree_vivants, number_of_seeds, mean_age, mean_rayons_tops,mean_energies, mean_energies_solaires, mean_hauteurs = main(1000)
+    graphiques(number_of_tree_vivants, number_of_seeds, mean_age, mean_rayons_tops, 
+               mean_energies, mean_energies_solaires, mean_hauteurs)

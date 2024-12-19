@@ -68,7 +68,7 @@ class Arbre:
             if self.energie < 10:
                 self.state = "dead"
 
-            if (self.age >= 1 and random.random() < 0.1 and #t'as modif ça petit con
+            if (self.age >= 1 and random.random() < 0.5 and #t'as modif ça petit con
                 self.dernier_reproduction >= attente_reproduction):  # Probabilité de 2% et attente après reproduction
                 self.produire_graine(arbres=arbres, nutrient_map=nutrient_map, width=width, height=height,
                                      max_graines_zone=max_graines_zone, max_graines_total=max_graines_total)
@@ -85,7 +85,7 @@ class Arbre:
             nutrient_map: np.ndarray,
             max_graines_zone: int,
             max_graines_total: int
-    ):
+    ): ### Il y a 2 boucles for c'est pas ouf
         # Limite de graines par zone
         graines_dans_zone = 0
         for autre_arbre in arbres:
@@ -116,18 +116,17 @@ class Arbre:
         if position_valide:
             nutriments = nutrient_map[int(new_x) % width, int(new_y) % height]
             nouveaux_arbre = Arbre(new_x, new_y, nutriments)
-            nouveaux_arbre.color = (255, 255, 0)
+            nouveaux_arbre.color = self.color
             arbres.append(self.mutation(nouveaux_arbre))
             self.graines_produites += 1
 
-    def mutation(self,new_arbre: 'Arbre'):   # Mutations
-        # Mutation de la couleur
+    def mutation(self,new_arbre: 'Arbre'):   # Mutations aléatoires
         if random.random() < 0.5:
             new_arbre.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
             new_arbre.max_age = min (max(self.max_age + random.randint(-1,1),1),100)
             new_arbre.favorite_groth = min (max([self.favorite_groth + (random.randint(-3, 3)/100),1]),100)
             new_arbre.coeff_stockage = min (max([self.coeff_stockage + (random.randint(-1, 1) / 100),1]),100)
-            print(f"Mutation!!!! ==> {new_arbre.color} , {new_arbre.max_age} , {new_arbre.favorite_groth}")
+            #print(f"Mutation!!!! ==> {new_arbre.color} , {new_arbre.max_age} , {new_arbre.favorite_groth}")
             return new_arbre
         else :
             return new_arbre
@@ -150,24 +149,30 @@ class Arbre:
         self.energie = self.energie_solaire + (100 - np.log(self.rayon_top + 1) * 30 * self.nutriments / 100)
 
     def calcule_cout_maintient(self):
-        cout_hauteur = self.hauteur * 0.05
+        cout_hauteur = self.hauteur * 0.06
         cout_surface = np.pi * (self.rayon_top ** 2) * 0.01
         # Coût total passif
         return cout_hauteur + cout_surface
 
     def draw(self, screen: Surface, width: int, height: int):
-        if self.state == "dead":
-            return
         if self.state == "seed":
             # Dessiner la graine comme un petit point
             pygame.draw.circle(screen, (255, 0, 0), self.pos.astype(int), 2)
             return
-        # state = "alive"
+
+        # Calcul dynamique de la couleur verte en fonction de la hauteur
+        max_hauteur = 50  # Hauteur maximale pour une valeur de vert minimale
+        green_intensity = max(0, 255 - int((self.hauteur / max_hauteur) * 255))
+        color_feuilles = (0, green_intensity, 0, 130)  # Transparence incluse
+
+        # Dessiner la canopée avec le vert ajusté
         surface = pygame.Surface((width, height), pygame.SRCALPHA)
-        alpha = 130  # Transparence
-        color_feuilles = (0, 255, 0, alpha)
-        # Le rayon_top représente la canopée, on la dessine en vert transparent
         pygame.draw.circle(surface, color_feuilles, self.pos.astype(int), int(self.rayon_top))
         screen.blit(surface, (0, 0))
-        # Un point blanc au centre
+
+        # Dessiner un point blanc au centre
         pygame.draw.circle(screen, self.color, self.pos.astype(int), 3)
+
+    def get(self):
+        return {"rayon_top":self.rayon_top,"age":self.age, "energie":self.energie,"energie_solaire":self.energie_solaire,
+                           "hauteur":self.hauteur}
