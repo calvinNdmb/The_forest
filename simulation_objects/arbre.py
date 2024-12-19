@@ -5,13 +5,14 @@ import random
 
 from pygame import Surface
 
-
+#>:/
 class Arbre:
     def __init__(self, x: int, y: int,nutriments: Union[float, np.float64]):
         self.pos = np.array([x, y], dtype=float)
         self.color = (255, 255, 255)
         self.nutriments = (nutriments / 255) * 100  # Nutriments à la position initiale
         self.state = "seed" # Etats possibles : "seed", "alive", "dead"
+        #self.rayon_top_max = random.randint(10, 100) # Les rayons max
         self.rayon_top = 0 # Début à 0 quand c'est une graine, ils pousseront quand la plante éclot
         self.max_age = random.randint(1, 40)
         self.age = 0
@@ -22,6 +23,7 @@ class Arbre:
         self.dernier_reproduction = 0  # Années depuis la dernière reproduction
         self.energie_solaire = 0
         self.hauteur = 1  # Hauteur initiale (en unités arbitraires)
+        #self.max_hauteur = random.randint(35, 50)  # Hauteur max possible
         self.favorite_groth = 50/100  # Facteur de croissance favori
 
     def update(
@@ -48,22 +50,21 @@ class Arbre:
                 return
 
             self.calcule_energie(arbres=arbres)
+            self.energie -= self.calcule_cout_maintient()
+
             self.zone_action = self.rayon_top * 2  # Mettre à jour la zone d'action
 
-            if 50 < self.energie < 60:
-                if random.randint(1, 100) > 20:
-                    self.energie -= 20 * (self.age / 10)
-
-
-            if self.energie > 50 :
-                self.energie -= 10
+            cout_croissance_largeur = 0.001 * (np.pi * self.rayon_top ** 2)  # Coût basé sur l'aire de la canopée
+            cout_croissance_hauteur = 0.07 * self.hauteur  # Coût basé sur la hauteur actuelle
+            # Croissance en largeur
+            if self.energie > (40 + cout_croissance_largeur): #and self.rayon_top < self.rayon_top_max:
+                self.energie -= cout_croissance_largeur
                 self.rayon_top += 0.1
-
-            if self.energie > 40:
-                self.energie -= 5  # Coût de croissance en hauteur
+            # Croissance en hauteur
+            if self.energie > (40 + cout_croissance_hauteur): #and self.hauteur < self.max_hauteur:
+                self.energie -= cout_croissance_hauteur
                 self.hauteur += 0.1
-
-            elif self.energie < 10:
+            if self.energie < 10:
                 self.state = "dead"
 
             if (self.age >= 1 and random.random() < 0.1 and #t'as modif ça petit con
@@ -148,6 +149,12 @@ class Arbre:
                     self.energie_solaire *= (1 - ombre_factor * proximity_factor)
         # Calcul de l'énergie totale
         self.energie = self.energie_solaire + (100 - np.log(self.rayon_top + 1) * 30 * self.nutriments / 100)
+
+    def calcule_cout_maintient(self):
+        cout_hauteur = self.hauteur * 0.03
+        cout_surface = np.pi * (self.rayon_top ** 2) * 0.0001
+        # Coût total passif
+        return cout_hauteur + cout_surface
 
     def draw(self, screen: Surface, width: int, height: int):
         if self.state == "dead":
