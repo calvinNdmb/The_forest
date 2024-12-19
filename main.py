@@ -1,10 +1,11 @@
-from map.nutrient_map import generate_nutrient_map
-from simulation_objects.arbre import Arbre
-
 import pygame
 import numpy as np
 
+from map.nutrient_map import generate_nutrient_map
+from simulation_objects.arbre import Arbre
+
 width, height = 720, 640
+
 def main():
     
     pygame.init()
@@ -16,7 +17,7 @@ def main():
     octaves = 7
     persistence = 0.5
     lacunarity = 1
-    nutrient_map = generate_nutrient_map(width, height,scale, octaves, persistence, lacunarity)
+    nutrient_map = generate_nutrient_map(width, height, scale, octaves, persistence, lacunarity)
     nutrient_map_rgb = np.stack((nutrient_map, nutrient_map, nutrient_map), axis=-1).astype(np.uint8)
     numb_tree = 100
     trees = []
@@ -49,7 +50,7 @@ def main():
 
         # Update et draw
         for p in trees:
-            p.update(trees)
+            p.update()
             p.draw(screen,width,height)
         if day%100==0:
             print(f"New year!!!!!🎉🎉🎉{day/100}")
@@ -59,7 +60,6 @@ def main():
         pygame.time.delay(1)
 
     pygame.quit()
-
 
 if __name__ == '__main__':
     main()

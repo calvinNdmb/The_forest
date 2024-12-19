@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
-import noise
+
+from map.utils import create_noise
 
 # Dimensions de la fenêtre
 width, height = 720, 640
@@ -11,19 +12,7 @@ def generate_nutrient_map(scale, octaves, persistence, lacunarity, offset):
         for j in range(height):
             nx = (i / scale) + offset
             ny = (j / scale) + offset
-            val = noise.pnoise2(nx, ny, octaves=octaves, persistence=persistence, 
-                                lacunarity=lacunarity, repeatx=1024, repeaty=1024, base=9)
-            pixel_val = (val + 1) / 2 * 255
-            # Discrétisation
-            if pixel_val <= 50:
-                pixel_val = 0
-            elif pixel_val <= 100 and pixel_val > 50:
-                pixel_val = 100
-            elif pixel_val <= 150 and pixel_val > 100:
-                pixel_val = 150
-            elif pixel_val <= 200 and pixel_val > 150:
-                pixel_val = 255
-            nutrient_map[i, j] = pixel_val
+            nutrient_map[i, j] = create_noise(nx=nx, ny=ny, octaves=octaves, persistence=persistence, lacunarity=lacunarity)
     return nutrient_map
 
 def main():

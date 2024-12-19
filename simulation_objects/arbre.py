@@ -1,9 +1,10 @@
+from typing import Union
 import pygame
 import numpy as np
 import random
 
 class Arbre:
-    def __init__(self, x, y, nutriments):
+    def __init__(self, x: int, y: int, nutriments: Union[float, np.float64]):
         self.pos = np.array([x, y], dtype=float)
         self.color = (255, 255, 255)
         self.nutriments = (nutriments/255)*100  # Nutriments à la position initiale
@@ -15,7 +16,7 @@ class Arbre:
         self.energie=0
         self.stored_energy=0
 
-    def update(self, arbres):
+    def update(self):
         if self.state == "seed":
             if random.random() < 0.001:
                 self.state = "dead"
@@ -30,7 +31,7 @@ class Arbre:
             #area_top = np.pi * (self.rayon_top**2)
             #top_factor = 1.0
             self.calcule_energie()
-            if self.energie >50 and self.energie<60:
+            if 50 < self.energie < 60:
                 if random.randint(1, 100) > 20:
                     self.energie -= 20*(self.age/10)
                     self.rayon_top += 0.1
@@ -56,7 +57,7 @@ class Arbre:
                         top_factor *= 0.5"""
 
     def calcule_energie(self):
-        self.energie=100-np.log(self.rayon_top)*30*self.nutriments/100
+        self.energie = 100-np.log(self.rayon_top)*30*self.nutriments/100
         
     def draw(self, screen, width, height):
         if self.state == "dead":
