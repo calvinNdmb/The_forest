@@ -9,7 +9,6 @@ class Arbre:
         self.color = (255, 255, 255)
         self.nutriments = (nutriments/255)*100  # Nutriments à la position initiale
         self.state = "seed"# Etats possibles : "seed", "alive", "dead"
-        self.rayon_top_max = random.randint(10, 100) # Les rayons max
         self.rayon_top = 0 # Début à 0 quand c'est une graine, ils pousseront quand la plante éclot
         self.max_age = random.randint(1, 40)
         self.age = 0
@@ -36,8 +35,6 @@ class Arbre:
 
             if self.energie >60:
                 self.rayon_top += 0.1
-
-            
             
             elif self.energie <10:
                 self.state = "dead"
@@ -67,7 +64,6 @@ class Arbre:
         surface = pygame.Surface((width, height), pygame.SRCALPHA)
         alpha = 50  
         color_feuilles = (43, 255, 0, alpha)
-        couleur_tronc = (150, 75, 25)
         # Le rayon_top représente la canopée, on la dessine en vert transparent
         pygame.draw.circle(surface, color_feuilles, self.pos.astype(int), int(self.rayon_top))
         screen.blit(surface, (0, 0))

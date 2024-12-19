@@ -1,13 +1,11 @@
 import pygame
 import numpy as np
-
 from map.nutrient_map import generate_nutrient_map
 from simulation_objects.arbre import Arbre
 
 width, height = 720, 640
 
 def main():
-    
     pygame.init()
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Gravité")
