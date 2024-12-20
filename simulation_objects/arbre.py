@@ -17,6 +17,7 @@ class Arbre:
         self.max_age = random.randint(1, 40)
         self.age = 0
         self.energie = 0
+        self.stored_energy = 0
         self.zone_action = 0
         self.graines_produites = 0
         self.dernier_reproduction = 0  # Années depuis la dernière reproduction
@@ -57,8 +58,8 @@ class Arbre:
             cout_croissance_largeur = 0.001 * (np.pi * self.rayon_top ** 2)  # Coût basé sur l'aire de la canopée
             cout_croissance_hauteur = 0.07 * self.hauteur  # Coût basé sur la hauteur actuelle
             if self.energie > 20:  # Stockage de l'énergie
-                self.energie += self.energie *(self.coeff_stockage/(self.age+1)) 
-            if self.energie > 50:  
+                self.energie += self.energie *(self.coeff_stockage/(self.age+1))
+            if self.energie > 50:
                 if random.random() < self.favorite_groth:
                     self.energie -= cout_croissance_largeur
                     self.rayon_top += 0.1
@@ -139,12 +140,11 @@ class Arbre:
             if autre is self or autre.state != "alive":
                 continue
             dist = np.linalg.norm(self.pos - autre.pos)
-            if dist < autre.rayon_top:  # Si cet arbre est sous la canopée de l'autre
-                if autre.hauteur > self.hauteur:
-                    # Calcul de l'effet de l'ombre et de la proximité (plus proche, plus d'ombre)
-                    ombre_factor = (autre.hauteur - self.hauteur) / autre.hauteur
-                    proximity_factor = max(0, 1 - dist / autre.rayon_top)
-                    self.energie_solaire *= (1 - ombre_factor * proximity_factor)
+            if dist < autre.rayon_top and autre.hauteur > self.hauteur:
+                ombre_factor = (autre.hauteur - self.hauteur) / autre.hauteur
+                proximity_factor = max(0, 1 - dist / autre.rayon_top)
+                densite_factor = min(1.0, len(arbres) / 25)  # Plus il y a d'arbres, plus l'ombre est forte
+                self.energie_solaire *= (1 - ombre_factor * proximity_factor * densite_factor)
         # Calcul de l'énergie totale
         self.energie = self.energie_solaire + (100 - np.log(self.rayon_top + 1) * 30 * self.nutriments / 100)
 
