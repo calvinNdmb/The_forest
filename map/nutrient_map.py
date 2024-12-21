@@ -8,12 +8,13 @@ def generate_nutrient_map(
         scale: int,
         octaves: int,
         persistence: float,
-        lacunarity: int
+        lacunarity: int,
+        offset: float = 0
 ) -> np.ndarray:
     nutrient_map = np.zeros((width, height))
     for i in range(width):
         for j in range(height):
-            nx = i / scale
-            ny = j / scale
+            nx = i / scale + offset
+            ny = j / scale  + offset
             nutrient_map[i, j] = create_noise(nx=nx, ny=ny, octaves=octaves, persistence=persistence, lacunarity=lacunarity)
     return nutrient_map
